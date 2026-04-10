@@ -10,8 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("/activities");
       const activities = await response.json();
 
-      // Clear loading message
+
+      // Clear loading message and dropdown
       activitiesList.innerHTML = "";
+      activitySelect.innerHTML = "<option value=\"\">-- Select an activity --</option>";
 
       // Populate activities list
       Object.entries(activities).forEach(([name, details]) => {
@@ -19,15 +21,46 @@ document.addEventListener("DOMContentLoaded", () => {
         activityCard.className = "activity-card";
 
         const spotsLeft = details.max_participants - details.participants.length;
+          const participantsHtml = details.participants.length
+            ? `<div class="participants-section"><strong>Participants:</strong><ul class="participants-list">${details.participants
+                .map((participant) => `
+                  <li class="participant-row">
+                    <span class="participant-name">${participant}</span>
+                    <span class="delete-participant" title="Unregister" data-activity="${encodeURIComponent(name)}" data-email="${encodeURIComponent(participant)}">✖</span>
+                  </li>`)
+                .join("")}</ul></div>`
+            : `<div class="participants-section"><strong>Participants:</strong><p class="no-participants">No participants yet.</p></div>`;
 
         activityCard.innerHTML = `
           <h4>${name}</h4>
           <p>${details.description}</p>
           <p><strong>Schedule:</strong> ${details.schedule}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
+          ${participantsHtml}
         `;
 
         activitiesList.appendChild(activityCard);
+
+          // Delete participant click handler
+          const deleteIcons = activityCard.querySelectorAll('.delete-participant');
+          deleteIcons.forEach((icon) => {
+            icon.addEventListener('click', async (e) => {
+              const activity = decodeURIComponent(icon.getAttribute('data-activity'));
+              const email = decodeURIComponent(icon.getAttribute('data-email'));
+              try {
+                const response = await fetch(`/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`, {
+                  method: 'DELETE',
+                });
+                if (response.ok) {
+                  fetchActivities();
+                } else {
+                  alert('Fehler beim Abmelden des Teilnehmers.');
+                }
+              } catch (error) {
+                alert('Netzwerkfehler beim Abmelden.');
+              }
+            });
+          });
 
         // Add option to select dropdown
         const option = document.createElement("option");
@@ -62,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
