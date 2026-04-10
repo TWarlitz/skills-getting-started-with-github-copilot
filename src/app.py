@@ -63,12 +63,6 @@ activities = {
         "max_participants": 25,
         "participants": ["natalie@mergington.edu", "ryan@mergington.edu"]
     },
-    "Debate Team": {
-        "description": "Develop public speaking and argumentation skills",
-        "schedule": "Mondays and Fridays, 3:45 PM - 5:00 PM",
-        "max_participants": 14,
-        "participants": ["victor@mergington.edu"]
-    },
     "Science Club": {
         "description": "Conduct experiments and explore STEM concepts",
         "schedule": "Tuesdays, 3:30 PM - 4:45 PM",
